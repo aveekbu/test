@@ -1,0 +1,42 @@
+# This is a basic workflow to help you get started with Actions
+
+name: testVaraible
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  key-rotation-job:
+    # Specifies the use of your self-hosted runner
+    runs-on: self-hosted
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2, 3, & 4: Run binary, capture, and store in a variable
+      - name: Run key-rotate and capture output
+        id: run_key_rotate
+        run: |
+          # Ensure the binary has execution permissions if it's in the repo
+          chmod +x ./key-rotate
+          
+          # Run the binary and capture the output into a local shell variable
+          RAW_OUTPUT=$(./key-rotate)
+          
+          # Store the output in the GitHub environment file for later steps
+          echo "daily_secret=$RAW_OUTPUT" >> $GITHUB_ENV
+
+      # Step 5: Echo the output
+      - name: Display the secret
+        run: |
+          echo "The daily secret is: ${{ env.daily_secret }}"
